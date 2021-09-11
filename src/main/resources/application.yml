@@ -1,4 +1,5 @@
 numeros-aleatorios: 100000
+semente: 1345
 filas:
   -
     capacidade: 5

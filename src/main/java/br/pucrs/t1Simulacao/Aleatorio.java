@@ -5,16 +5,26 @@ public class Aleatorio {
     private int c;
     private double mod;
     private int semente;
-    private int size;
+    private int tamanho;
     private double ultimoAleatorio;
     private double qtAleatorios;
 
-    public Aleatorio(int size) {
+    public Aleatorio(int tamanho) {
         this.setA(54564);
         this.setC(31);
         this.setMod(Math.pow(2,39)-5);
         this.setSemente(7);
-        this.setSize(size);
+        this.setTamanho(tamanho);
+        this.setUltimoAleatorio(getSemente());
+        this.setQtAleatorios(0);
+    }
+
+    public Aleatorio(int tamanho, int semente) {
+        this.setA(54564);
+        this.setC(31);
+        this.setMod(Math.pow(2,39)-5);
+        this.setSemente(semente);
+        this.setTamanho(tamanho);
         this.setUltimoAleatorio(getSemente());
         this.setQtAleatorios(0);
     }
@@ -82,12 +92,12 @@ public class Aleatorio {
         this.semente = semente;
     }
 
-    public int getSize() {
-        return size;
+    public int getTamanho() {
+        return tamanho;
     }
 
-    public void setSize(int size) {
-        this.size = size;
+    public void setTamanho(int tamanho) {
+        this.tamanho = tamanho;
     }
 
     public double getUltimoAleatorio() {

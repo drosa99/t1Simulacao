@@ -14,13 +14,16 @@ public class Simulador {
     public double tempo;
     public double tempoAnterior = 0;
     public double[] probabilidade;
+    private int semente;
+    private Aleatorio aleatorios;
 
     public Simulador() {
         this.escalonadorDeFilas = new EscalonadorDeFilas();
+        mapearYamlParaPOJO();
+        this.aleatorios = new Aleatorio(this.qtdNumerosAleatorios, this.semente);
     }
 
-    public void simulacao (Aleatorio aleatorios) {
-
+    public void simulacao () {
         while(aleatorios.getQtAleatorios() < this.qtdNumerosAleatorios) {
             Evento eventoAtual = eventosAgendados.get(0); //Pega o próximo evento a ocorrer
             eventosAgendados.remove(0);             //Remove o evento dos agendados, pois já está sendo executado
@@ -53,7 +56,7 @@ public class Simulador {
 
             //Se só tem uma pessoa na fila ou nenhuma, essa pessoa já é atendida
             if (filaAtual.getPopulacaoAtual() <= filaAtual.getServidores()) {
-                System.out.println("EXECUTADO |" + eventoAtual.getTipo() + " | " + eventoAtual.getTempo());
+                //System.out.println("EXECUTADO |" + eventoAtual.getTipo() + " | " + eventoAtual.getTempo());
                 agendaSaida(aleatorio, filaAtual);
             }
         } else {
@@ -65,7 +68,7 @@ public class Simulador {
     }
 
     private void saida(Evento eventoAtual, Fila filaAtual, double aleatorio){
-        System.out.println("EXECUTADO |" + eventoAtual.getTipo() + " | " + eventoAtual.getTempo());
+        //System.out.println("EXECUTADO |" + eventoAtual.getTipo() + " | " + eventoAtual.getTempo());
         this.ajustarProbabilidade(filaAtual);
         filaAtual.setPopulacaoAtual(filaAtual.getPopulacaoAtual() - 1);
 
@@ -81,7 +84,10 @@ public class Simulador {
 
         this.qtdNumerosAleatorios = (int) dados.get("numeros-aleatorios");
 
+        this.semente = (int) dados.get("semente");
+
         final List<HashMap<String, Object>> dadosFilas = (List<HashMap<String, Object>>) dados.get("filas");
+
 
         //Mapeia do .yml para uma instancia de Fila a representacao dos dados contidos no arquivo
         List<Fila> filas = dadosFilas.stream().map(fila -> {
@@ -96,7 +102,7 @@ public class Simulador {
             return novaFila;
         }).collect(Collectors.toList());
 
-        System.out.println("EVENTO   |" + "tipo    |" +  " tempo");
+        //System.out.println("EVENTO   |" + "tipo    |" +  " tempo");
         escalonadorDeFilas.getFilas().addAll(filas); //Adiciona todas filas no escalonador
         escalonadorDeFilas.getFilas().remove(0); //Remove o primeiro item, que é vazio
 
@@ -106,7 +112,7 @@ public class Simulador {
         //Agenda o primeiro evento
         Evento primeiroEvento = new Evento(Evento.TipoEnum.CHEGADA, escalonadorDeFilas.getFilas().get(0).getChegadaInicial());
         eventosAgendados.add(primeiroEvento);
-        System.out.println("AGENDADO |" + primeiroEvento.getTipo() + " | " + primeiroEvento.getTempo());
+        //System.out.println("AGENDADO |" + primeiroEvento.getTipo() + " | " + primeiroEvento.getTempo());
     }
 
     public void agendaSaida(double aleatorio, Fila filaAtual) {
@@ -117,9 +123,9 @@ public class Simulador {
 
         Evento novaSaida = new Evento(Evento.TipoEnum.SAIDA, tempoRealSaida);
         eventosAgendados.add(novaSaida);
-        eventosAgendados.sort(Comparator.comparingDouble(event -> event.getTempo()));
+        eventosAgendados.sort(Comparator.comparingDouble(Evento::getTempo));
 
-        System.out.println("AGENDADO |" + novaSaida.getTipo() + " | " + tempoRealSaida);
+        //System.out.println("AGENDADO |" + novaSaida.getTipo() + " | " + tempoRealSaida);
     }
 
     public void agendaChegada(double aleatorio, Fila filaAtual) {
@@ -130,9 +136,9 @@ public class Simulador {
 
         Evento novaChegada = new Evento(Evento.TipoEnum.CHEGADA, tempoRealChegada);
         eventosAgendados.add(novaChegada);
-        eventosAgendados.sort(Comparator.comparingDouble(event -> event.getTempo()));
+        eventosAgendados.sort(Comparator.comparingDouble(Evento::getTempo));
 
-        System.out.println("AGENDADO |" + novaChegada.getTipo() + " | " + tempoRealChegada);
+        //System.out.println("AGENDADO |" + novaChegada.getTipo() + " | " + tempoRealChegada);
     }
 
     public void ajustarProbabilidade(Fila filaAtual) {
@@ -143,11 +149,12 @@ public class Simulador {
         System.out.println("Probabilidades:");
 
         double porcentagem = 0;
-
+        int i = 0;
         for (double item : probabilidade){
             porcentagem += (item / this.tempo);
             String result = String.format("Value %.4f", ((item / this.tempo)*100));
-            System.out.println(result + "%");
+            System.out.println("Posição " + i + " : " + result + "%");
+            i++;
         }
 
         System.out.println(porcentagem*100 + "%");

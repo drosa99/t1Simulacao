@@ -36,9 +36,9 @@ public class Simulador {
             Fila filaAtual = escalonadorDeFilas.getFilas().get(0);
 
             if (eventoAtual.getTipo() == Evento.TipoEnum.CHEGADA) {
-                chegada(eventoAtual, filaAtual, aleatorios.geraProximoAleatorio());
+                chegada(filaAtual, aleatorios.geraProximoAleatorio() );
             } else if (eventoAtual.getTipo() == Evento.TipoEnum.SAIDA) {
-                saida(eventoAtual, filaAtual, aleatorios.geraProximoAleatorio());
+                saida(filaAtual, aleatorios.geraProximoAleatorio());
             }
         }
 
@@ -46,7 +46,7 @@ public class Simulador {
         this.exibirProbabilidade();
     }
 
-    private void chegada(Evento eventoAtual, Fila filaAtual, double aleatorio){
+    private void chegada(Fila filaAtual, double aleatorio){
 
         this.ajustarProbabilidade(filaAtual);
 
@@ -67,7 +67,7 @@ public class Simulador {
         agendaChegada(aleatorio, filaAtual);
     }
 
-    private void saida(Evento eventoAtual, Fila filaAtual, double aleatorio){
+    private void saida(Fila filaAtual, double aleatorio){
         //System.out.println("EXECUTADO |" + eventoAtual.getTipo() + " | " + eventoAtual.getTempo());
         this.ajustarProbabilidade(filaAtual);
         filaAtual.setPopulacaoAtual(filaAtual.getPopulacaoAtual() - 1);
@@ -117,7 +117,7 @@ public class Simulador {
 
     public void agendaSaida(double aleatorio, Fila filaAtual) {
         // t = ((B-A) * aleatorio + A)
-        double tempoSaida = (filaAtual.getSaidaMaxima() - filaAtual.getSaidaMinima()) * (aleatorio / (Math.pow(2,39)-5)) + filaAtual.getSaidaMinima();
+        double tempoSaida = (filaAtual.getSaidaMaxima() - filaAtual.getSaidaMinima()) * aleatorio  + filaAtual.getSaidaMinima();
         // t + tempo atual
         double tempoRealSaida = tempoSaida + tempo;
 
@@ -146,6 +146,8 @@ public class Simulador {
     }
 
     public void exibirProbabilidade() {
+        System.out.println(this.aleatorios.toString());
+
         System.out.println("Probabilidades:");
 
         double porcentagem = 0;
@@ -158,6 +160,7 @@ public class Simulador {
         }
 
         System.out.println(porcentagem*100 + "%");
+        System.out.println("Perdidos " + this.escalonadorDeFilas.getFilas().get(0).getPerdidos());
         System.out.println("Tempo total: " + tempo);
     }
 }

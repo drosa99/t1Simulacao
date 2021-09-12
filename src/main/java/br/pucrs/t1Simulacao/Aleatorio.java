@@ -2,57 +2,31 @@ package br.pucrs.t1Simulacao;
 
 public class Aleatorio {
     private int a;
-    private int c;
+    private long c;
     private double mod;
     private int semente;
     private int tamanho;
     private double ultimoAleatorio;
-    private double qtAleatorios;
+    private int qtAleatorios;
 
-    public Aleatorio(int tamanho) {
-        this.setA(54564);
-        this.setC(31);
-        this.setMod(Math.pow(2,39)-5);
-        this.setSemente(7);
-        this.setTamanho(tamanho);
-        this.setUltimoAleatorio(getSemente());
-        this.setQtAleatorios(0);
-    }
+    //public double[] array = new Random().doubles(100001).toArray(); //array com aleatorios para teste
 
     public Aleatorio(int tamanho, int semente) {
-        this.setA(54564);
-        this.setC(31);
-        this.setMod(Math.pow(2,39)-5);
+        this.setA(16807);
+        this.setC(11);
+        this.setMod(Math.pow(2,31) - 1);
+
         this.setSemente(semente);
         this.setTamanho(tamanho);
         this.setUltimoAleatorio(getSemente());
         this.setQtAleatorios(0);
     }
 
-    /* Método para testar com outros aleatórios
-    public Aleatorio(int size, double[] numerosAleatorios) {
-        this.a = 54564;
-        this.c = 31;
-        this.mod = Math.pow(2,39)-5;
-        this.semente = 7;
-        this.size = size;
-        this.numerosAleatorios = numerosAleatorios;
-    } */
-
-    /*
-    public void geraPseudoAleatorio(){
-        numerosAleatorios = new double[size];
-        numerosAleatorios[0] = semente;
-        for(int i = 1; i<size; i++){
-            numerosAleatorios[i] = ((a*numerosAleatorios[i-1] + c) % mod);
-        }
-    }
-     */
 
     public double geraProximoAleatorio(){
-        setUltimoAleatorio(((getA() * getUltimoAleatorio() + getC()) % getMod())/ getMod());
+        setUltimoAleatorio(((getA() * getUltimoAleatorio() + getC()) % getMod()));
         setQtAleatorios(getQtAleatorios() + 1);
-        return getUltimoAleatorio();
+        return getUltimoAleatorio() / getMod();
     }
 
     /**
@@ -68,11 +42,11 @@ public class Aleatorio {
         this.a = a;
     }
 
-    public int getC() {
+    public long getC() {
         return c;
     }
 
-    public void setC(int c) {
+    public void setC(long c) {
         this.c = c;
     }
 
@@ -108,11 +82,23 @@ public class Aleatorio {
         this.ultimoAleatorio = ultimoAleatorio;
     }
 
-    public double getQtAleatorios() {
+    public int getQtAleatorios() {
         return qtAleatorios;
     }
 
-    public void setQtAleatorios(double qtAleatorios) {
+    public void setQtAleatorios(int qtAleatorios) {
         this.qtAleatorios = qtAleatorios;
+    }
+
+    @Override
+    public String toString() {
+        return "Gerador: \n" +
+                " a=" + a +
+                " \n c=" + c +
+                " \n mod=" + mod +
+                " \n semente=" + semente +
+                " \n tamanho=" + tamanho +
+                " \n ultimoAleatorio=" + ultimoAleatorio +
+                " \n qtAleatorios=" + qtAleatorios;
     }
 }

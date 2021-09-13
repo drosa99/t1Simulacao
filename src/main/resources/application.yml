@@ -1,5 +1,5 @@
 numeros-aleatorios: 100000
-semente: 7
+semente: 25478
 filas:
   -
     capacidade: 5
@@ -8,5 +8,5 @@ filas:
     chegada-minima: 2.0
     saida-maxima: 5.0
     saida-minima: 3.0
-    servidores: 1
+    servidores: 2
 

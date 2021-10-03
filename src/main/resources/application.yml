@@ -1,7 +1,7 @@
 numeros-aleatorios: 100000
 semente: 25478
 filas:
-  -
+  - id: 0
     capacidade: 5
     chegada-inicial: 3.0
     chegada-maxima: 4.0
@@ -9,4 +9,15 @@ filas:
     saida-maxima: 5.0
     saida-minima: 3.0
     servidores: 2
+
+  - id: 1
+    servidores: 1
+    capacidade: 3
+    saida-minima: 3.0
+    saida-maxima: 5.0
+
+redes:
+  - origem: 0
+    destino: 1
+    probabilidade: 1.0
 

@@ -13,7 +13,7 @@ public class Simulador {
     public List<Evento> eventosAgendados = new ArrayList<>();
     public double tempo;
     public double tempoAnterior = 0;
-    public double[] probabilidade;
+    public Map<Integer, double[]> probabilidades = new HashMap<>();
     private int semente;
     private Aleatorio aleatorios;
 
@@ -92,22 +92,48 @@ public class Simulador {
         //Mapeia do .yml para uma instancia de Fila a representacao dos dados contidos no arquivo
         List<Fila> filas = dadosFilas.stream().map(fila -> {
             Fila novaFila = new Fila();
+            novaFila.setId(fila.containsKey("id") ? (int) fila.get("id") : 1);
             novaFila.setCapacidade((int) fila.get("capacidade"));
-            novaFila.setChegadaInicial((double) fila.get("chegada-inicial"));
-            novaFila.setChegadaMaxima((double) fila.get("chegada-maxima"));
-            novaFila.setChegadaMinima((double) fila.get("chegada-minima"));
-            novaFila.setSaidaMaxima((double) fila.get("saida-maxima"));
-            novaFila.setSaidaMinima((double) fila.get("saida-minima"));
+            novaFila.setChegadaInicial((double) fila.getOrDefault("chegada-inicial", -1.0));
+            novaFila.setChegadaMaxima((double) fila.getOrDefault("chegada-maxima", -1.0));
+            novaFila.setChegadaMinima((double) fila.getOrDefault("chegada-minima", -1.0));
+            novaFila.setSaidaMaxima((double) fila.getOrDefault("saida-maxima", -1.0));
+            novaFila.setSaidaMinima((double) fila.getOrDefault("saida-minima", -1.0));
             novaFila.setServidores((int) fila.get("servidores"));
             return novaFila;
         }).collect(Collectors.toList());
+
+        // montar topologia de rede
+        // dados de rede contém todas a filas
+        List<LinkedHashMap<String, Object>> dadosRedes = (List<LinkedHashMap<String, Object>>) dados.get("redes");
+
+        // itera a estrutura para popular as filas
+        for (HashMap<String, Object> rede : dadosRedes) {
+
+            int origem = (int) rede.get("origem");
+            int destino = (int) rede.get("destino");
+            double probabilidade = (double) rede.get("probabilidade");
+
+            Fila filaOrigem = filas.stream().filter(f -> f.getId() == origem).findFirst().get();
+            Fila filaDestino = filas.stream().filter(f -> f.getId() == destino).findFirst().get();
+
+            // relaciona o destino à origem
+            filaOrigem.putToFilaDestino(destino, filaDestino);
+
+            // propabilidade que é passada no arquivo yml
+            filaOrigem.putToProbabilidades(destino, probabilidade);
+        }
+
 
         //System.out.println("EVENTO   |" + "tipo    |" +  " tempo");
         escalonadorDeFilas.getFilas().addAll(filas); //Adiciona todas filas no escalonador
         escalonadorDeFilas.getFilas().remove(0); //Remove o primeiro item, que é vazio
 
-        //Adiciona probabilidade % de chance de a fila estar com x pessoas em seu k
-        probabilidade = new double[escalonadorDeFilas.getFilas().get(0).getCapacidade() + 1];
+        //Adiciona probabilidade % de chance de a fila estar com x pessoas em seu k de multiplas filas
+        //probabilidade = new double[escalonadorDeFilas.getFilas().get(0).getCapacidade() + 1];
+        escalonadorDeFilas.getFilas().forEach(f -> {
+            probabilidades.put(f.getId(), new double[f.getCapacidade() + 1]);
+        });
 
         //Agenda o primeiro evento
         Evento primeiroEvento = new Evento(Evento.TipoEnum.CHEGADA, escalonadorDeFilas.getFilas().get(0).getChegadaInicial());
@@ -142,26 +168,31 @@ public class Simulador {
     }
 
     public void ajustarProbabilidade(Fila filaAtual) {
-        probabilidade[filaAtual.getPopulacaoAtual()] += this.tempo - this.tempoAnterior;
+        probabilidades.get(filaAtual.getId())[filaAtual.getPopulacaoAtual()] += this.tempo - this.tempoAnterior;
     }
 
     public void exibirProbabilidade() {
         System.out.println(this.aleatorios.toString());
 
-        System.out.println("Probabilidades:");
 
-        double porcentagem = 0;
-        int i = 0;
-        for (double item : probabilidade){
-            porcentagem += (item / this.tempo);
-            String result = String.format("Value %.4f", ((item / this.tempo)*100));
-            System.out.println("Posição " + i + " : " + result + "%");
-            i++;
-        }
+        probabilidades.forEach((id, pFilas) -> {
+            System.out.println("- Fila: " + id);
+            System.out.println("Probabilidades:");
+            double porcentagem = 0;
+            int i = 0;
+            for (double item : pFilas) {
+                porcentagem += (item / this.tempo);
+                String result = String.format("Value %.4f", ((item / this.tempo) * 100));
+                System.out.println("Posição " + i + " : " + result + "%");
+                i++;
+            }
 
-        System.out.println(porcentagem*100 + "%");
-        System.out.println("Perdidos " + this.escalonadorDeFilas.getFilas().get(0).getPerdidos());
-        System.out.println("Tempo total: " + tempo);
+            System.out.println(porcentagem * 100 + "%");
+            System.out.println("Perdidos " + this.escalonadorDeFilas.getFilas().get(id).getPerdidos());
+            System.out.println("Tempo total: " + tempo);
+        });
+
+
     }
 }
 

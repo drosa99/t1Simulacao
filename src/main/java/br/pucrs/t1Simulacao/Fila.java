@@ -1,7 +1,10 @@
 package br.pucrs.t1Simulacao;
 
+import java.util.HashMap;
+
 public class Fila {
     //Dados carregados do arquivo de entrada .yml
+    private int id;
     private double chegadaInicial;
     private int servidores;
     private int capacidade;
@@ -14,7 +17,20 @@ public class Fila {
     private int populacaoAtual;
     private int perdidos;
 
-    public Fila() {}
+    //Topologia de filas
+    private HashMap<Integer, Fila> filaDestino = new HashMap<>();
+    private HashMap<Integer, Double> probabilidades = new HashMap<>();
+
+    public Fila() {
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public double getChegadaInicial() {
         return chegadaInicial;
@@ -86,5 +102,29 @@ public class Fila {
 
     public void setPerdidos(int perdidos) {
         this.perdidos = perdidos;
+    }
+
+    public HashMap<Integer, Fila> getFilaDestino() {
+        return filaDestino;
+    }
+
+    public void setFilaDestino(HashMap<Integer, Fila> filaDestino) {
+        this.filaDestino = filaDestino;
+    }
+
+    public HashMap<Integer, Double> getProbabilidades() {
+        return probabilidades;
+    }
+
+    public void setProbabilidades(HashMap<Integer, Double> probabilidades) {
+        this.probabilidades = probabilidades;
+    }
+
+    public void putToFilaDestino(Integer chave, Fila fila) {
+        this.filaDestino.put(chave, fila);
+    }
+
+    public void putToProbabilidades(Integer chave, Double probabilidade) {
+        this.probabilidades.put(chave, probabilidade);
     }
 }

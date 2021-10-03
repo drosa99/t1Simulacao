@@ -35,20 +35,49 @@ public class Simulador {
 
             Fila filaAtual = escalonadorDeFilas.getFilas().get(0);
 
-            if (eventoAtual.getTipo() == Evento.TipoEnum.CHEGADA) {
-                chegada(filaAtual, aleatorios.geraProximoAleatorio() );
-            } else if (eventoAtual.getTipo() == Evento.TipoEnum.SAIDA) {
-                saida(filaAtual, aleatorios.geraProximoAleatorio());
+            switch (eventoAtual.getTipo()) {
+                case CHEGADA:
+                    chegada(filaAtual);
+                    break;
+                case SAIDA:
+                    saida(filaAtual);
+                    break;
+                case PASSAGEM:
+                    passagem(filaAtual);
+                    break;
             }
+
         }
 
         //Exibir probabilidades
         this.exibirProbabilidade();
     }
 
-    private void chegada(Fila filaAtual, double aleatorio){
+    private void passagem(Fila filaAtual) {
+        this.ajustarProbabilidade();
+        filaAtual.setPopulacaoAtual(filaAtual.getPopulacaoAtual() - 1);
 
-        this.ajustarProbabilidade(filaAtual);
+        if (filaAtual.getPopulacaoAtual() >= filaAtual.getServidores()) {
+            agendaPassagem(filaAtual);
+        }
+
+        //TODO Valor fixado, quando tiver mais de uma, muda pra sorteio
+        Fila destino = filaAtual.getFilaDestino().get(1);
+
+        if (destino.getPopulacaoAtual() < destino.getCapacidade()) {
+            destino.setPopulacaoAtual(destino.getPopulacaoAtual() + 1);
+            if (destino.getPopulacaoAtual() <= destino.getServidores()) {
+                agendaSaida(destino);
+            }
+        } else {
+            destino.setPerdidos(destino.getPerdidos() + 1);
+        }
+
+    }
+
+    private void chegada(Fila filaAtual) {
+
+        this.ajustarProbabilidade();
 
         //Se ainda tempo espaço na fila
         if (filaAtual.getPopulacaoAtual() < filaAtual.getCapacidade()) {
@@ -57,24 +86,24 @@ public class Simulador {
             //Se só tem uma pessoa na fila ou nenhuma, essa pessoa já é atendida
             if (filaAtual.getPopulacaoAtual() <= filaAtual.getServidores()) {
                 //System.out.println("EXECUTADO |" + eventoAtual.getTipo() + " | " + eventoAtual.getTempo());
-                agendaSaida(aleatorio, filaAtual);
+                agendaSaida(filaAtual);
             }
         } else {
             //Não conseguiu entrar na fila pois estava cheia. E contabilizada como uma pessoa perdida
             filaAtual.setPerdidos(filaAtual.getPerdidos() + 1);
         }
 
-        agendaChegada(aleatorio, filaAtual);
+        agendaChegada(filaAtual);
     }
 
-    private void saida(Fila filaAtual, double aleatorio){
+    private void saida(Fila filaAtual) {
         //System.out.println("EXECUTADO |" + eventoAtual.getTipo() + " | " + eventoAtual.getTempo());
-        this.ajustarProbabilidade(filaAtual);
+        this.ajustarProbabilidade();
         filaAtual.setPopulacaoAtual(filaAtual.getPopulacaoAtual() - 1);
 
         //Se tem gente na espera pra ficar de frente para o servidor
         if (filaAtual.getPopulacaoAtual() >= filaAtual.getServidores()) {
-            agendaSaida(aleatorio, filaAtual);
+            agendaSaida(filaAtual);
         }
     }
 
@@ -136,39 +165,55 @@ public class Simulador {
         });
 
         //Agenda o primeiro evento
-        Evento primeiroEvento = new Evento(Evento.TipoEnum.CHEGADA, escalonadorDeFilas.getFilas().get(0).getChegadaInicial());
+        Evento primeiroEvento = new Evento(Evento.TipoEnum.CHEGADA, escalonadorDeFilas.getFilas().get(0).getChegadaInicial(), escalonadorDeFilas.getFilas().get(0).getId());
         eventosAgendados.add(primeiroEvento);
         //System.out.println("AGENDADO |" + primeiroEvento.getTipo() + " | " + primeiroEvento.getTempo());
     }
 
-    public void agendaSaida(double aleatorio, Fila filaAtual) {
+    public void agendaSaida(Fila filaAtual) {
+        double aleatorio = aleatorios.geraProximoAleatorio();
         // t = ((B-A) * aleatorio + A)
-        double tempoSaida = (filaAtual.getSaidaMaxima() - filaAtual.getSaidaMinima()) * aleatorio  + filaAtual.getSaidaMinima();
+        double tempoSaida = (filaAtual.getSaidaMaxima() - filaAtual.getSaidaMinima()) * aleatorio + filaAtual.getSaidaMinima();
         // t + tempo atual
         double tempoRealSaida = tempoSaida + tempo;
 
-        Evento novaSaida = new Evento(Evento.TipoEnum.SAIDA, tempoRealSaida);
+        Evento novaSaida = new Evento(Evento.TipoEnum.SAIDA, tempoRealSaida, filaAtual.getId());
         eventosAgendados.add(novaSaida);
         eventosAgendados.sort(Comparator.comparingDouble(Evento::getTempo));
 
         //System.out.println("AGENDADO |" + novaSaida.getTipo() + " | " + tempoRealSaida);
     }
 
-    public void agendaChegada(double aleatorio, Fila filaAtual) {
+    public void agendaChegada(Fila filaAtual) {
+        double aleatorio = aleatorios.geraProximoAleatorio();
         // t = ((B-A) * aleatorio + A)
         double tempoChegada = (filaAtual.getChegadaMaxima() - filaAtual.getChegadaMinima()) * aleatorio + filaAtual.getChegadaMinima();
         // t + tempo atual
         double tempoRealChegada = tempoChegada + tempo;
 
-        Evento novaChegada = new Evento(Evento.TipoEnum.CHEGADA, tempoRealChegada);
+        Evento novaChegada = new Evento(Evento.TipoEnum.CHEGADA, tempoRealChegada, filaAtual.getId());
         eventosAgendados.add(novaChegada);
         eventosAgendados.sort(Comparator.comparingDouble(Evento::getTempo));
 
         //System.out.println("AGENDADO |" + novaChegada.getTipo() + " | " + tempoRealChegada);
     }
 
-    public void ajustarProbabilidade(Fila filaAtual) {
-        probabilidades.get(filaAtual.getId())[filaAtual.getPopulacaoAtual()] += this.tempo - this.tempoAnterior;
+    private void agendaPassagem(Fila filaAtual) {
+        double aleatorio = aleatorios.geraProximoAleatorio();
+        // t = ((B-A) * aleatorio + A)
+        double tempoSaida = (filaAtual.getSaidaMaxima() - filaAtual.getSaidaMinima()) * aleatorio + filaAtual.getSaidaMinima();
+        // t + tempo atual
+        double tempoRealSaida = tempoSaida + tempo;
+
+        Evento novaSaida = new Evento(Evento.TipoEnum.PASSAGEM, tempoRealSaida, filaAtual.getId());
+        eventosAgendados.add(novaSaida);
+        eventosAgendados.sort(Comparator.comparingDouble(Evento::getTempo));
+    }
+
+    public void ajustarProbabilidade() {
+        escalonadorDeFilas.getFilas().forEach(fila -> {
+            probabilidades.get(fila.getId())[fila.getPopulacaoAtual()] += this.tempo - this.tempoAnterior;
+        });
     }
 
     public void exibirProbabilidade() {

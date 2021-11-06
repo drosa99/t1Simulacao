@@ -3,12 +3,21 @@ package br.pucrs.t1Simulacao;
 public class Evento {
     private TipoEnum tipo;
     private double tempo; //Tempo do evento
-    private int idFila;
+    private Integer idOrigem;
+    private Integer idDestino;
 
-    public Evento(TipoEnum tipo, double tempo, int idFila) {
-        this.idFila = idFila;
+    public Evento(TipoEnum tipo, double tempo, int idOrigem) {
+        this.idOrigem = idOrigem;
         this.setTipo(tipo);
         this.setTempo(tempo);
+    }
+
+    public Evento(TipoEnum tipo, double tempo, int idOrigem, int idDestino) {
+        this.tipo = tipo;
+        this.tempo = tempo;
+        //this.idFila = idFila;
+        this.idOrigem = idOrigem;
+        this.idDestino = idDestino;
     }
 
     public TipoEnum getTipo() {
@@ -27,12 +36,21 @@ public class Evento {
         this.tempo = tempo;
     }
 
-    public int getIdFila() {
-        return idFila;
+
+    public Integer getIdOrigem() {
+        return idOrigem;
     }
 
-    public void setIdFila(int idFila) {
-        this.idFila = idFila;
+    public void setIdOrigem(int idOrigem) {
+        this.idOrigem = idOrigem;
+    }
+
+    public Integer getIdDestino() {
+        return idDestino;
+    }
+
+    public void setIdDestino(Integer idDestino) {
+        this.idDestino = idDestino;
     }
 
     public enum TipoEnum {

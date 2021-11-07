@@ -9,8 +9,6 @@ public class Aleatorio {
     private double ultimoAleatorio;
     private int qtAleatorios;
 
-    //public double[] array = new Random().doubles(100001).toArray(); //array com aleatorios para teste
-
     public Aleatorio(int tamanho, int semente) {
         this.setA(16807);
         this.setC(11);
